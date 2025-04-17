@@ -1,0 +1,67 @@
+name: Secure Development
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+  push:
+    paths-ignore:    # Add this key and its child glob
+      - '**.md'
+  workflow_call:
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Setup node"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: "Install jest env jsdom"
+        run: npm install -D jest-environment-jsdom
+
+      - name: "Run tests"
+        run: npm test
+
+  lint:
+    name: Code standards
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Setup node"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: "Install eslint"          # Add this step
+        run: npm install -D eslint
+
+      - name: "Lint code"
+        run: npm run lint --if-present
+
+  njsscan:
+    runs-on: ubuntu-latest
+    name: njsscan check
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@v4.2.2
+    - uses: actions/setup-python@v5.3.0
+      with:
+        python-version: '3.12'
+    - name: nodejsscan scan
+      id: njsscan
+      uses: ajinabraham/njsscan-action@master
+      with:
+        args: '.'
